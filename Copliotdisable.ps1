@@ -1,5 +1,16 @@
 # PowerShell script to modify Microsoft Edge, Windows Explorer, and Group Policy settings
 
+# Function to check Windows edition
+function CheckWindowsEdition {
+    $edition = (Get-WmiObject -Class Win32_OperatingSystem).Caption
+    if ($edition -match "Home") {
+        Write-Host "This script does not work on Windows Home editions. Modifications will not be applied."
+        return $true
+    } else {
+        return $false
+    }
+}
+
 # Function to disable CoPilot feature in Edge
 function DisableEdgeCoPilot {
     $edgeRegistryPath = "HKCU:\Software\Microsoft\Edge"
@@ -55,9 +66,19 @@ function ConfigureGroupPolicyToRemoveCoPilot {
 }
 
 # Main script execution
+if (CheckWindowsEdition) {
+    Write-Host "Exiting script."
+    exit
+}
+
 DisableEdgeCoPilot
 DisableBingAI
 DisableSearchBoxSuggestions
 ConfigureGroupPolicyToRemoveCoPilot
+
+# Delayed restart
+Write-Host "Restarting the computer in 3 seconds..."
+Start-Sleep -Seconds 3
+Restart-Computer -Force
 
 Write-Host "Edge browser, Windows Explorer, and Group Policy settings modified successfully."
